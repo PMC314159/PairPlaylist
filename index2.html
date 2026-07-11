@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#efe9e2" />
+  <title>Pair Playlist Maker</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
+  <style>
+    :root {
+      --bg: #ece7e1;
+      --panel: rgba(255,255,255,.76);
+      --card: #f8f4ef;
+      --text: #25222a;
+      --muted: #77717c;
+      --line: rgba(63, 55, 70, .12);
+      --accent: #8b789d;
+      --accent2: #6e8196;
+      --white: #fffdfb;
+      --shadow: 0 24px 70px rgba(65, 54, 73, .15);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 15px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 6%, rgba(171, 145, 184, .20), transparent 28%),
+        radial-gradient(circle at 88% 15%, rgba(125, 151, 173, .17), transparent 25%),
+        linear-gradient(180deg, #eee9e4 0%, #e8e1da 100%);
+    }
+
+    button, input, textarea { font: inherit; }
+
+    button { cursor: pointer; }
+
+    img { display: block; max-width: 100%; }
+
+    .app {
+      width: min(1480px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 40px;
+    }
+
+    .appbar {
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 13px 16px;
+      border: 1px solid rgba(255,255,255,.65);
+      border-radius: 999px;
+      background: rgba(249,246,242,.84);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 12px 34px rgba(70, 61, 79, .10);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .08em;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 18px rgba(139,120,157,.45);
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.82);
+      color: var(--text);
+      font-weight: 760;
+      transition: .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn.primary {
+      border-color: transparent;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #77698a);
+      box-shadow: 0 10px 22px rgba(117, 96, 137, .22);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .editor {
+      position: sticky;
+      top: 84px;
+      max-height: calc(100vh - 96px);
+      overflow: auto;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.70);
+      border-radius: 26px;
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      scrollbar-width: thin;
+    }
+
+    .editor h2 {
+      margin: 0 0 5px;
+      font-size: 22px;
+      letter-spacing: -.03em;
+    }
+
+    .editor-intro {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    details {
+      border-top: 1px solid var(--line);
+      padding: 14px 0;
+    }
+
+    details:first-of-type { border-top: 0; }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      font-size: 14px;
+      font-weight: 820;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .form-grid {
+      display: grid;
+      gap: 11px;
+      margin-top: 13px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #595260;
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      background: rgba(255,255,255,.88);
+      color: var(--text);
+      padding: 11px 12px;
+      transition: .18s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: rgba(139,120,157,.52);
+      box-shadow: 0 0 0 3px rgba(139,120,157,.10);
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      font-size: 11px;
+    }
+
+    input[type="color"] {
+      height: 42px;
+      padding: 5px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .song-edit {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.48);
+    }
+
+    .song-edit-title {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+
+    .preview-wrap {
+      min-width: 0;
+      overflow: auto;
+      padding: 4px 4px 24px;
+    }
+
+    .poster {
+      position: relative;
+      width: 1080px;
+      min-height: 1440px;
+      overflow: hidden;
+      margin: 0 auto;
+      padding: 58px;
+      border-radius: 34px;
+      color: var(--poster-text, #28232d);
+      background:
+        radial-gradient(circle at 6% 2%, color-mix(in srgb, var(--poster-accent) 25%, transparent), transparent 30%),
+        radial-gradient(circle at 94% 20%, color-mix(in srgb, var(--poster-accent2) 20%, transparent), transparent 26%),
+        linear-gradient(180deg, var(--poster-bg, #f5efe8), #ece4dd);
+      box-shadow: 0 28px 80px rgba(63, 53, 71, .18);
+    }
+
+    .poster::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .25;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,.25), transparent 36%);
+    }
+
+    .poster-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .poster-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 28px;
+    }
+
+    .poster-eyebrow {
+      margin-bottom: 10px;
+      color: var(--poster-accent);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .poster-title {
+      margin: 0;
+      max-width: 700px;
+      font-size: 86px;
+      line-height: .98;
+      letter-spacing: -.06em;
+      word-break: keep-all;
+    }
+
+    .poster-index {
+      min-width: 150px;
+      padding-top: 10px;
+      color: rgba(44,38,49,.58);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-align: right;
+    }
+
+    .poster-desc {
+      max-width: 850px;
+      margin: 0 0 38px;
+      color: rgba(44,38,49,.72);
+      font-size: 21px;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .hero-collage {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      margin-bottom: 34px;
+    }
+
+    .hero-main,
+    .hero-side {
+      position: relative;
+      overflow: hidden;
+      min-height: 430px;
+      border-radius: 26px;
+      background: #d7cfc9;
+    }
+
+    .hero-side {
+      min-height: 430px;
+    }
+
+    .hero-main img,
+    .hero-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-label {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(30,26,33,.64);
+      color: white;
+      font-size: 13px;
+      font-weight: 850;
+      backdrop-filter: blur(10px);
+    }
+
+    .pair-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 34px;
+    }
+
+    .person-card {
+      padding: 24px;
+      border: 1px solid rgba(65,55,70,.10);
+      border-radius: 25px;
+      background: rgba(255,255,255,.54);
+      box-shadow: 0 14px 35px rgba(70,58,78,.08);
+    }
+
+    .person-head {
+      display: grid;
+      grid-template-columns: 112px minmax(0,1fr);
+      gap: 17px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .person-image {
+      overflow: hidden;
+      width: 112px;
+      height: 112px;
+      border-radius: 22px;
+      background: #d8d0ca;
+    }
+
+    .person-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .person-kicker {
+      color: var(--poster-accent);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .11em;
+    }
+
+    .person-name {
+      margin: 4px 0 0;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: -.04em;
+    }
+
+    .person-intro {
+      min-height: 92px;
+      margin: 0 0 20px;
+      color: rgba(44,38,49,.68);
+      font-size: 16px;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .track-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .track {
+      display: grid;
+      grid-template-columns: 44px minmax(0,1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 15px;
+      background: rgba(255,255,255,.62);
+      border: 1px solid rgba(65,55,70,.09);
+    }
+
+    .track-no {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      color: white;
+      background: linear-gradient(135deg, var(--poster-accent), var(--poster-accent2));
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .track-title {
+      overflow: hidden;
+      font-size: 15px;
+      font-weight: 850;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .track-artist {
+      overflow: hidden;
+      margin-top: 2px;
+      color: rgba(44,38,49,.55);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .shared-box {
+      padding: 28px;
+      border-radius: 28px;
+      background: rgba(40,35,45,.92);
+      color: white;
+      box-shadow: 0 18px 40px rgba(50,42,56,.16);
+    }
+
+    .shared-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .shared-kicker {
+      color: #c7bad4;
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .shared-title {
+      margin: 4px 0 0;
+      font-size: 38px;
+      letter-spacing: -.04em;
+    }
+
+    .shared-count {
+      color: rgba(255,255,255,.55);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .shared-list {
+      display: grid;
+      gap: 2px;
+    }
+
+    .shared-row {
+      display: grid;
+      grid-template-columns: 42px minmax(0,1fr) 180px;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 8px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .shared-row:first-child { border-top: 0; }
+
+    .shared-number {
+      color: rgba(255,255,255,.45);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .shared-song {
+      font-size: 15px;
+      font-weight: 820;
+    }
+
+    .shared-artist {
+      overflow: hidden;
+      color: rgba(255,255,255,.56);
+      font-size: 13px;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .poster-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 24px;
+      color: rgba(44,38,49,.48);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .poster-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-align: right;
+    }
+
+    .commission-credit {
+      color: rgba(44,38,49,.58);
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: .01em;
+      white-space: nowrap;
+    }
+
+    .image-placeholder {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(135deg, rgba(139,120,157,.24), rgba(110,129,150,.18));
+      color: rgba(44,38,49,.48);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .08em;
+    }
+
+    .mobile-editor-toggle {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; }
+
+      .editor {
+        position: static;
+        max-height: none;
+      }
+
+      .preview-wrap {
+        width: 100%;
+      }
+
+      .poster {
+        transform-origin: top left;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .app { width: min(100% - 14px, 1480px); }
+
+      .appbar {
+        border-radius: 20px;
+      }
+
+      .brand { font-size: 11px; }
+
+      .top-actions .btn:not(.primary) { display: none; }
+
+      .preview-wrap {
+        overflow: hidden;
+      }
+
+      .poster {
+        transform: scale(calc((100vw - 28px) / 1080));
+        margin-bottom: calc(-1440px + (1440px * ((100vw - 28px) / 1080)));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="appbar">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        PAIR PLAYLIST MAKER
+      </div>
+
+      <div class="top-actions">
+        <button class="btn" id="resetBtn" type="button">예시로 초기화</button>
+        <button class="btn primary" id="saveBtn" type="button">PNG로 저장</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="editor">
+        <h2>플레이리스트 편집</h2>
+        <p class="editor-intro">입력한 내용은 오른쪽 이미지에 바로 반영됩니다. 저장되는 이미지에는 이 편집창이 포함되지 않습니다.</p>
+
+        <details open>
+          <summary>전체 설정</summary>
+          <div class="form-grid">
+            <label>페어 이름
+              <input id="pairNameInput" type="text" value="MIDNIGHT HOUR" />
+            </label>
+
+            <label>짧은 문구
+              <input id="eyebrowInput" type="text" value="A PLAYLIST FOR TWO" />
+            </label>
+
+            <label>페어 소개
+              <textarea id="pairDescInput">두 사람의 시작과 변화, 서로를 이해하게 된 순간을 음악으로 기록한 플레이리스트.</textarea>
+            </label>
+
+            <label>메인 이미지
+              <input id="heroImageInput" type="file" accept="image/*" />
+            </label>
+
+            <label>보조 이미지
+              <input id="sideImageInput" type="file" accept="image/*" />
+            </label>
+
+            <label>커미션주 이름
+              <input id="commissionerInput" type="text" placeholder="예: 홍길동" />
+            </label>
+
+            <div class="two-col">
+              <label>배경색
+                <input id="bgColorInput" type="color" value="#f4eee7" />
+              </label>
+              <label>강조색
+                <input id="accentColorInput" type="color" value="#8b789d" />
+              </label>
+            </div>
+
+            <label>보조 강조색
+              <input id="accentColor2Input" type="color" value="#6e8196" />
+            </label>
+          </div>
+        </details>
+
+        <details open>
+          <summary>첫 번째 인물</summary>
+          <div class="form-grid">
+            <label>이름
+              <input id="name1Input" type="text" value="첫 번째 인물" />
+            </label>
+            <label>소개
+              <textarea id="intro1Input">차분하고 단단해 보이지만, 쉽게 드러내지 못하는 감정을 품고 있는 사람.</textarea>
+            </label>
+            <label>인물 이미지
+              <input id="person1ImageInput" type="file" accept="image/*" />
+            </label>
+
+            <div class="song-edit">
+              <div class="song-edit-title">SYMBOL SONG 01</div>
+              <input id="p1s1Title" type="text" value="상징곡 제목 1" placeholder="곡 제목" />
+              <input id="p1s1Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+
+            <div class="song-edit">
+              <div class="song-edit-title">SYMBOL SONG 02</div>
+              <input id="p1s2Title" type="text" value="상징곡 제목 2" placeholder="곡 제목" />
+              <input id="p1s2Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>두 번째 인물</summary>
+          <div class="form-grid">
+            <label>이름
+              <input id="name2Input" type="text" value="두 번째 인물" />
+            </label>
+            <label>소개
+              <textarea id="intro2Input">불안정하고 솔직하며, 관계 속에서 끊임없이 답을 찾으려 하는 사람.</textarea>
+            </label>
+            <label>인물 이미지
+              <input id="person2ImageInput" type="file" accept="image/*" />
+            </label>
+
+            <div class="song-edit">
+              <div class="song-edit-title">SYMBOL SONG 01</div>
+              <input id="p2s1Title" type="text" value="상징곡 제목 1" placeholder="곡 제목" />
+              <input id="p2s1Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+
+            <div class="song-edit">
+              <div class="song-edit-title">SYMBOL SONG 02</div>
+              <input id="p2s2Title" type="text" value="상징곡 제목 2" placeholder="곡 제목" />
+              <input id="p2s2Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>공통 플레이리스트</summary>
+          <div class="form-grid">
+            <label>플레이리스트 제목
+              <input id="sharedTitleInput" type="text" value="Our Midnight Playlist" />
+            </label>
+
+            <div class="song-edit">
+              <div class="song-edit-title">TRACK 01</div>
+              <input id="s1Title" type="text" value="공통 플레이리스트 곡 1" placeholder="곡 제목" />
+              <input id="s1Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+
+            <div class="song-edit">
+              <div class="song-edit-title">TRACK 02</div>
+              <input id="s2Title" type="text" value="공통 플레이리스트 곡 2" placeholder="곡 제목" />
+              <input id="s2Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+
+            <div class="song-edit">
+              <div class="song-edit-title">TRACK 03</div>
+              <input id="s3Title" type="text" value="공통 플레이리스트 곡 3" placeholder="곡 제목" />
+              <input id="s3Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+
+            <div class="song-edit">
+              <div class="song-edit-title">TRACK 04</div>
+              <input id="s4Title" type="text" value="공통 플레이리스트 곡 4" placeholder="곡 제목" />
+              <input id="s4Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+
+            <div class="song-edit">
+              <div class="song-edit-title">TRACK 05</div>
+              <input id="s5Title" type="text" value="공통 플레이리스트 곡 5" placeholder="곡 제목" />
+              <input id="s5Artist" type="text" value="아티스트 이름" placeholder="아티스트" />
+            </div>
+          </div>
+        </details>
+      </aside>
+
+      <section class="preview-wrap">
+        <div class="poster" id="poster">
+          <div class="poster-inner">
+            <div class="poster-top">
+              <div>
+                <div class="poster-eyebrow" id="eyebrowPreview">A PLAYLIST FOR TWO</div>
+                <h1 class="poster-title" id="pairNamePreview">MIDNIGHT HOUR</h1>
+              </div>
+              <div class="poster-index">PAIR ARCHIVE<br>NO. 01</div>
+            </div>
+
+            <p class="poster-desc" id="pairDescPreview">
+              두 사람의 시작과 변화, 서로를 이해하게 된 순간을 음악으로 기록한 플레이리스트.
+            </p>
+
+            <div class="hero-collage">
+              <div class="hero-main" id="heroMain">
+                <div class="image-placeholder">MAIN IMAGE</div>
+                <span class="hero-label">PAIR VISUAL</span>
+              </div>
+              <div class="hero-side" id="heroSide">
+                <div class="image-placeholder">SUB IMAGE</div>
+                <span class="hero-label">MEMORY</span>
+              </div>
+            </div>
+
+            <div class="pair-grid">
+              <article class="person-card">
+                <div class="person-head">
+                  <div class="person-image" id="person1Image">
+                    <div class="image-placeholder">PERSON 01</div>
+                  </div>
+                  <div>
+                    <div class="person-kicker">CHARACTER 01</div>
+                    <h2 class="person-name" id="name1Preview">첫 번째 인물</h2>
+                  </div>
+                </div>
+
+                <p class="person-intro" id="intro1Preview">
+                  차분하고 단단해 보이지만, 쉽게 드러내지 못하는 감정을 품고 있는 사람.
+                </p>
+
+                <div class="track-stack">
+                  <div class="track">
+                    <div class="track-no">01</div>
+                    <div>
+                      <div class="track-title" id="p1s1TitlePreview">상징곡 제목 1</div>
+                      <div class="track-artist" id="p1s1ArtistPreview">아티스트 이름</div>
+                    </div>
+                  </div>
+                  <div class="track">
+                    <div class="track-no">02</div>
+                    <div>
+                      <div class="track-title" id="p1s2TitlePreview">상징곡 제목 2</div>
+                      <div class="track-artist" id="p1s2ArtistPreview">아티스트 이름</div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="person-card">
+                <div class="person-head">
+                  <div class="person-image" id="person2Image">
+                    <div class="image-placeholder">PERSON 02</div>
+                  </div>
+                  <div>
+                    <div class="person-kicker">CHARACTER 02</div>
+                    <h2 class="person-name" id="name2Preview">두 번째 인물</h2>
+                  </div>
+                </div>
+
+                <p class="person-intro" id="intro2Preview">
+                  불안정하고 솔직하며, 관계 속에서 끊임없이 답을 찾으려 하는 사람.
+                </p>
+
+                <div class="track-stack">
+                  <div class="track">
+                    <div class="track-no">01</div>
+                    <div>
+                      <div class="track-title" id="p2s1TitlePreview">상징곡 제목 1</div>
+                      <div class="track-artist" id="p2s1ArtistPreview">아티스트 이름</div>
+                    </div>
+                  </div>
+                  <div class="track">
+                    <div class="track-no">02</div>
+                    <div>
+                      <div class="track-title" id="p2s2TitlePreview">상징곡 제목 2</div>
+                      <div class="track-artist" id="p2s2ArtistPreview">아티스트 이름</div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <section class="shared-box">
+              <div class="shared-head">
+                <div>
+                  <div class="shared-kicker">Shared Playlist</div>
+                  <h2 class="shared-title" id="sharedTitlePreview">Our Midnight Playlist</h2>
+                </div>
+                <div class="shared-count">5 TRACKS</div>
+              </div>
+
+              <div class="shared-list">
+                <div class="shared-row">
+                  <div class="shared-number">01</div>
+                  <div class="shared-song" id="s1TitlePreview">공통 플레이리스트 곡 1</div>
+                  <div class="shared-artist" id="s1ArtistPreview">아티스트 이름</div>
+                </div>
+                <div class="shared-row">
+                  <div class="shared-number">02</div>
+                  <div class="shared-song" id="s2TitlePreview">공통 플레이리스트 곡 2</div>
+                  <div class="shared-artist" id="s2ArtistPreview">아티스트 이름</div>
+                </div>
+                <div class="shared-row">
+                  <div class="shared-number">03</div>
+                  <div class="shared-song" id="s3TitlePreview">공통 플레이리스트 곡 3</div>
+                  <div class="shared-artist" id="s3ArtistPreview">아티스트 이름</div>
+                </div>
+                <div class="shared-row">
+                  <div class="shared-number">04</div>
+                  <div class="shared-song" id="s4TitlePreview">공통 플레이리스트 곡 4</div>
+                  <div class="shared-artist" id="s4ArtistPreview">아티스트 이름</div>
+                </div>
+                <div class="shared-row">
+                  <div class="shared-number">05</div>
+                  <div class="shared-song" id="s5TitlePreview">공통 플레이리스트 곡 5</div>
+                  <div class="shared-artist" id="s5ArtistPreview">아티스트 이름</div>
+                </div>
+              </div>
+            </section>
+
+            <div class="poster-footer">
+              <span>PAIR PLAYLIST ARCHIVE</span>
+              <div class="poster-footer-right">
+                <span>made with memories & music</span>
+                <span class="commission-credit" id="commissionCredit" hidden></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    const bindText = (inputId, previewId) => {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      const update = () => preview.textContent = input.value || " ";
+      input.addEventListener("input", update);
+      update();
+    };
+
+    [
+      ["pairNameInput", "pairNamePreview"],
+      ["eyebrowInput", "eyebrowPreview"],
+      ["pairDescInput", "pairDescPreview"],
+      ["name1Input", "name1Preview"],
+      ["intro1Input", "intro1Preview"],
+      ["name2Input", "name2Preview"],
+      ["intro2Input", "intro2Preview"],
+      ["p1s1Title", "p1s1TitlePreview"],
+      ["p1s1Artist", "p1s1ArtistPreview"],
+      ["p1s2Title", "p1s2TitlePreview"],
+      ["p1s2Artist", "p1s2ArtistPreview"],
+      ["p2s1Title", "p2s1TitlePreview"],
+      ["p2s1Artist", "p2s1ArtistPreview"],
+      ["p2s2Title", "p2s2TitlePreview"],
+      ["p2s2Artist", "p2s2ArtistPreview"],
+      ["sharedTitleInput", "sharedTitlePreview"],
+      ["s1Title", "s1TitlePreview"],
+      ["s1Artist", "s1ArtistPreview"],
+      ["s2Title", "s2TitlePreview"],
+      ["s2Artist", "s2ArtistPreview"],
+      ["s3Title", "s3TitlePreview"],
+      ["s3Artist", "s3ArtistPreview"],
+      ["s4Title", "s4TitlePreview"],
+      ["s4Artist", "s4ArtistPreview"],
+      ["s5Title", "s5TitlePreview"],
+      ["s5Artist", "s5ArtistPreview"]
+    ].forEach(([inputId, previewId]) => bindText(inputId, previewId));
+
+    function bindImage(inputId, targetId, altText) {
+      const input = document.getElementById(inputId);
+      const target = document.getElementById(targetId);
+
+      input.addEventListener("change", () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          target.querySelector("img")?.remove();
+          target.querySelector(".image-placeholder")?.remove();
+
+          const img = document.createElement("img");
+          img.src = event.target.result;
+          img.alt = altText;
+          target.prepend(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    bindImage("heroImageInput", "heroMain", "메인 이미지");
+    bindImage("sideImageInput", "heroSide", "보조 이미지");
+    bindImage("person1ImageInput", "person1Image", "첫 번째 인물 이미지");
+    bindImage("person2ImageInput", "person2Image", "두 번째 인물 이미지");
+
+    const poster = document.getElementById("poster");
+
+    const commissionerInput = document.getElementById("commissionerInput");
+    const commissionCredit = document.getElementById("commissionCredit");
+
+    commissionerInput.addEventListener("input", () => {
+      const name = commissionerInput.value.trim();
+      commissionCredit.textContent = name ? `© ${name}` : "";
+      commissionCredit.hidden = !name;
+    });
+
+    document.getElementById("bgColorInput").addEventListener("input", (e) => {
+      poster.style.setProperty("--poster-bg", e.target.value);
+    });
+
+    document.getElementById("accentColorInput").addEventListener("input", (e) => {
+      poster.style.setProperty("--poster-accent", e.target.value);
+    });
+
+    document.getElementById("accentColor2Input").addEventListener("input", (e) => {
+      poster.style.setProperty("--poster-accent2", e.target.value);
+    });
+
+    async function savePoster() {
+      const saveBtn = document.getElementById("saveBtn");
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = "저장 중…";
+      saveBtn.disabled = true;
+
+      try {
+        await document.fonts.ready;
+
+        const canvas = await html2canvas(poster, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null,
+          logging: false,
+          width: poster.offsetWidth,
+          height: poster.offsetHeight,
+          windowWidth: 1400,
+          windowHeight: 1800
+        });
+
+        const link = document.createElement("a");
+        const safeName = (document.getElementById("pairNameInput").value || "pair-playlist")
+          .trim()
+          .replace(/[\\/:*?"<>|]/g, "-");
+
+        link.download = `${safeName}-playlist.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      } catch (error) {
+        console.error(error);
+        alert("이미지 저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", savePoster);
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (!confirm("입력한 내용을 예시 상태로 되돌릴까요?")) return;
+      location.reload();
+    });
+  </script>
+</body>
+</html>
